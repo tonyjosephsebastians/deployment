@@ -1,0 +1,149 @@
+Sure, Tony! Here's a **step-by-step guide** to help you deploy a **small FastAPI application to an Azure Web App using Managed Identity or a VM**, and make it accessible via a specific URL like `https://yourwebapp.azurewebsites.net/codex`.
+
+---
+
+## 🧾 Step-by-Step Deployment of FastAPI to Azure Web App with `/codex` Route
+
+---
+
+### 🔧 Step 1: Create Your FastAPI App
+
+Save this code as `main.py`:
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/codex")
+def read_codex():
+    return {"message": "Welcome to Codex"}
+```
+
+---
+
+### 📁 Step 2: Prepare Requirements
+
+Create `requirements.txt`:
+
+```txt
+fastapi
+uvicorn[standard]
+```
+
+---
+
+### 🛠 Step 3: Test Locally
+
+```bash
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+Go to `http://localhost:8000/codex` and confirm it works.
+
+---
+
+### ☁️ Step 4: Set Up Azure Web App
+
+**If already created**, skip this. Else:
+
+1. Go to Azure Portal.
+2. Create a **Web App** (Linux or Windows).
+3. Choose Python 3.x as the runtime.
+4. Deploy code via ZIP, GitHub, or FTP (we'll use ZIP here).
+5. Note the **Web App URL**, e.g., `https://yourwebapp.azurewebsites.net`.
+
+---
+
+### 🔐 Step 5: Set Up Managed Identity (if using VM)
+
+If deploying from an Azure VM:
+
+1. Enable **Managed Identity** on your VM:
+   - Go to VM → Identity → System Assigned → "On"
+2. Assign role:
+   - Go to your Web App → Access Control (IAM) → Add Role Assignment
+   - Select role `Contributor` or `Website Contributor`
+   - Assign to your VM's Managed Identity
+
+---
+
+### 🚀 Step 6: Deploy FastAPI App via ZIP
+
+#### Option A: Zip deploy (from your local or VM)
+
+1. Create ZIP:
+
+```bash
+mkdir app
+cp main.py requirements.txt app/
+cd app
+zip -r fastapiapp.zip .
+```
+
+2. Install `az` CLI (if not already):
+
+```bash
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+```
+
+3. Authenticate using Managed Identity (inside VM):
+
+```bash
+az login --identity
+```
+
+4. Deploy:
+
+```bash
+az webapp deployment source config-zip \
+    --resource-group <your-resource-group> \
+    --name <your-webapp-name> \
+    --src fastapiapp.zip
+```
+
+---
+
+### ⚙️ Step 7: Configure Startup Command for FastAPI
+
+In Azure Portal → Your Web App:
+
+1. Go to **Configuration → General Settings**.
+2. Set **Startup Command**:
+
+```bash
+gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
+```
+
+---
+
+### 🌐 Step 8: Access Your App via `/codex`
+
+Now go to:
+
+```
+https://yourwebapp.azurewebsites.net/codex
+```
+
+You should see:
+
+```json
+{"message": "Welcome to Codex"}
+```
+
+---
+
+### ✅ Summary Checklist
+
+- [x] FastAPI app created with `/codex` route
+- [x] Requirements file ready
+- [x] App tested locally
+- [x] Web App created on Azure
+- [x] Managed Identity enabled on VM
+- [x] Zip deployed using `az webapp deployment`
+- [x] Startup command configured
+- [x] Access via `https://yourwebapp.azurewebsites.net/codex`
+
+---
+
+Would you like me to generate a deployable ZIP for testing or give you a GitHub Actions pipeline for automatic deployment?
