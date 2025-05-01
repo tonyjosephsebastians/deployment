@@ -1,4 +1,4 @@
-Sure, Tony! Here's a **step-by-step guide** to help you deploy a **small FastAPI application to an Azure Web App using Managed Identity or a VM**, and make it accessible via a specific URL like `https://yourwebapp.azurewebsites.net/codex`.
+`https://yourwebapp.azurewebsites.net/codex`.
 
 ---
 
