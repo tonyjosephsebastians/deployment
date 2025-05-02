@@ -20,3 +20,23 @@ with open(zip_path, "rb") as zip_file:
 
 print("Status:", response.status_code)
 print("Response:", response.text)
+
+
+
+from azure.mgmt.web import WebSiteManagementClient
+from azure.identity import ManagedIdentityCredential
+
+cred = ManagedIdentityCredential()
+subscription_id = "<your-subscription-id>" 
+resource_group = ""
+webapp = ""
+
+web_client = WebSiteManagementClient(cred, subscription_id)
+config = web_client.web_apps.get_configuration(resource_group, webapp)
+
+# Set the FastAPI startup command
+config.app_command_line = "gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app"
+web_client.web_apps.update_configuration(resource_group, webapp, config)
+
+print("Startup command configured.")
+
