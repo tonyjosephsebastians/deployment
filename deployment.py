@@ -77,3 +77,40 @@ deployment.wait()
 print("Deployment completed.")
 
 
+from azure.identity import ManagedIdentityCredential
+from azure.mgmt.authorization import AuthorizationManagementClient
+
+# Inputs
+client_id = "<YOUR-MANAGED-IDENTITY-CLIENT-ID>"
+subscription_id = "<YOUR-SUBSCRIPTION-ID>"
+resource_group = "<YOUR-RESOURCE-GROUP>"
+webapp_name = "<YOUR-WEBAPP-NAME>"
+
+# Authenticate with Managed Identity (User-Assigned)
+credential = ManagedIdentityCredential(client_id=client_id)
+
+# Initialize the Authorization client
+auth_client = AuthorizationManagementClient(credential, subscription_id)
+
+# Scope to check: the Web App resource
+scope = f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Web/sites/{webapp_name}"
+
+print(f"Checking role assignments for scope: {scope}")
+
+# List all role assignments for this scope
+assignments = auth_client.role_assignments.list_for_scope(scope)
+
+# Print results
+has_roles = False
+for assignment in assignments:
+    if assignment.principal_id:  # optional: filter by principal_id or client_id if needed
+        has_roles = True
+        print(f"✓ Role Assigned: {assignment.role_definition_id}")
+        print(f"  Principal ID: {assignment.principal_id}")
+        print(f"  Scope: {assignment.scope}")
+        print("-" * 40)
+
+if not has_roles:
+    print("⚠️ No roles found for the Managed Identity on this Web App.")
+
+
